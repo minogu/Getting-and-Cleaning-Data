@@ -1,0 +1,91 @@
+---
+title: "Codebook"
+author: "Przemysław Skowron"
+date: "8/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This codebook describes list of all variables, data and any transformations that were applied to source data to produce tidy dataset stored in output_data.txt file.
+
+## Experiment and source data description
+
+The experiments have been carried out with a group of 30 volunteers within an age bracket of 19-48 years. Each person performed six activities wearing a smartphone (Samsung Galaxy S II) on the waist. Using its embedded accelerometer and gyroscope, we captured 3-axial linear acceleration and 3-axial angular velocity at a constant rate of 50Hz. The experiments have been video-recorded to label the data manually. The obtained dataset has been randomly partitioned into two sets, where 70% of the volunteers was selected for generating the training data and 30% the test data. 
+
+The sensor signals (accelerometer and gyroscope) were pre-processed by applying noise filters and then sampled in fixed-width sliding windows of 2.56 sec and 50% overlap (128 readings/window). The sensor acceleration signal, which has gravitational and body motion components, was separated using a Butterworth low-pass filter into body acceleration and gravity. The gravitational force is assumed to have only low frequency components, therefore a filter with 0.3 Hz cutoff frequency was used. From each window, a vector of features was obtained by calculating variables from the time and frequency domain.
+
+For each record in the source dataset it is provided: 
+
+* Triaxial acceleration from the accelerometer (total acceleration) and the estimated body acceleration. 
+* Triaxial Angular velocity from the gyroscope. 
+* A 561-feature vector with time and frequency domain variables. 
+* Its activity label. 
+* An identifier of the subject who carried out the experiment.
+
+## Transformation 
+
+The following steps were applied to the source dataset to transform it into tidy output dataset (please refer fo README.Rmd file for more details on the source code and algorythm used):
+
+1. Training and Test datasets were merged into one dataset.
+2. Out of 561 features only measurements on mean and standard deviations were extracted (66 variables).
+3. Activity id's were replaced with descriptive activity names and added to the dataset.
+4. Each variable was provided with descriptive label following the same naming convention (e.g. timeGravityAccMeanX)
+5. A summary dataset was constructed with the average of each variable for each subject and each activity.
+6. The summary dataset has been saved as space-delimited flat text file: output_data.txt
+
+## Output dataset 
+
+### Description
+
+The output dataset is a data frame with 180 rows and 68 columns. There are no missing values (NA's) in the dataset. The dataset is tidy as per [tidy dataset definition](https://vita.had.co.nz/papers/tidy-data.pdf).
+
+Each row represents the vector of averagees of each variable for a given subject and activity. As there are 30 subjects and 6 activities the number of rows is 30 * 6 = 180.
+
+The first 2 columns in the dataset are "identifiers": 
+
+1. **subjectId** representing the subject (person) in the experiment. It is integer variable with values in the range between 1 and 30.
+2. **activityName** is a desctiptive name of activity performed by each subject during the experiment. It is factor variable with the following levels:
+```{r, echo=FALSE}
+  library(knitr)
+
+  x <- read.table("./output_data.txt", header = TRUE)
+  y <- data.frame(sort(unique(x$activityName)))
+  z <- c("Subject was laying down during the experiment.", 
+       "Subject was sitting during the experiment.",
+       "Subject was standing during the experiment.",
+       "Subject was walking on flat surface during the experiment.",
+       "Subject was walking downstairs during the experiment.",
+       "Subject was walking upstairs during the experiment.")
+  y <- cbind(y, z)
+  names(y) <- c("activityName value", "Value description")
+  kable(y, caption = "Factor levels for activityName variable:")
+```
+
+
+The following 66 columns in the dataset represent average measurements of 66 variables per activity per subject. They are all numeric variables. Each variable has descriptive name foillowing the same naming convention consisting of multiple elements, e.g:
+
+* **time** or **freq** prefix indicates time or frequency domain signals;
+* **Acc** or **Gyro** strings indicate that signal comes either from accelerometer or gyroscope;
+* **Body** or **Gravity** strings indicate body and gravity acceleration signals;
+* **Jerk** string indicates calculated Jerk signals;
+* **Mag** string indicates magnitude of three-dimensional signals calculated using the Euclidean norm;
+* **Mean** or **Std** strings indicated mean or standard deviation variable;
+* **X**, **Y** or **Z** suffix is used to denote 3-axial signals in the X, Y and Z directions.
+
+### List of variables
+
+The following list shows names of all 68 variables (indicators: SubjectId, activityName and 66 numeric variables) along with some statistics for each variable (class, number of unique values, min and max value) in the order as they appear in the dataset:
+
+```{r, echo=FALSE}
+  options(width = 120)
+  x <- read.table("./output_data.txt", header = TRUE)
+  cl <- sapply(x, class)
+  min <- sapply(x, min)
+  max <- sapply(x, max)
+  uniques <- sapply(x, function(x) {length(unique(x))})
+  data.frame("Variable" = names(x), "Class" = cl, "Unique_values" = uniques, "Min_value" = min, "Max_value" = max, row.names = 1:68)
+  
+```
