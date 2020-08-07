@@ -2,7 +2,7 @@
 title: "Codebook"
 author: "Przemysław Skowron"
 date: "8/6/2020"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -77,14 +77,14 @@ The following 66 columns in the dataset represent average measurements of 66 var
 
 ### List of variables
 
-The following list shows names of all 68 variables (indicators: SubjectId, activityName and 66 numeric variables) along with some statistics for each variable (class, number of unique values, min and max value) in the order as they appear in the dataset:
+The following list shows names of all 68 variables (indicators: SubjectId, activityName and 66 numeric variables) along with some statistics for each variable (class, number of unique values, rounded min and max value) in the order as they appear in the dataset:
 
 ```{r, echo=FALSE}
-  options(width = 120)
+  options(width = 100)
   x <- read.table("./output_data.txt", header = TRUE)
   cl <- sapply(x, class)
-  min <- sapply(x, min)
-  max <- sapply(x, max)
+  min <- sapply(x, function(x) {if (is.numeric(x)) round(min(x), digits = 4) else min(x)})
+  max <- sapply(x, function(x) {if (is.numeric(x)) round(max(x), digits = 4) else max(x)})
   uniques <- sapply(x, function(x) {length(unique(x))})
   data.frame("Variable" = names(x), "Class" = cl, "Unique_values" = uniques, "Min_value" = min, "Max_value" = max, row.names = 1:68)
   
